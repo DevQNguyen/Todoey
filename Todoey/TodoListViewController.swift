@@ -12,10 +12,17 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = ["Buy nachos", "Buy noodles", "Buy tiramisu cake"]
     
+    //Declare user default to persist key-value data across launches
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        //Declare constant to point to user default database if there is data there
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
 
     
@@ -73,10 +80,16 @@ class TodoListViewController: UITableViewController {
         
         //Create a alert popup
         let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
+        
         //Create a alert action
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            
             //When user clicks, append text in textfield to array
             self.itemArray.append(textField.text!)
+            
+            //Set the key and value for UserDefaults
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            
             //Reload TableView data for new entry to show in todoItemCell
             self.tableView.reloadData()
             
