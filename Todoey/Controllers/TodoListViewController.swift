@@ -9,8 +9,9 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
-
-    var itemArray = ["Buy nachos", "Buy noodles", "Buy tiramisu cake"]
+    
+    //Declare variable for array of Item objects
+    var itemArray = [Item]()
     
     //Declare user default to persist key-value data across launches
     let defaults = UserDefaults.standard
@@ -19,10 +20,30 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        //Declare constant to point to user default database if there is data there
-        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+        
+        //Declare an instance of Item object
+        let newItem = Item()
+        //Store string in newItem
+        newItem.title = "Eat ice cream"
+        //Append newItem to itemArray
+        itemArray.append(newItem)
+        
+        
+        //Append newItem2
+        let newItem2 = Item()
+        newItem2.title = "Buy Ferrari 458"
+        itemArray.append(newItem2)
+        
+        //Append newItem3
+        let newItem3 = Item()
+        newItem3.title = "Buy 747 Jumbo Jet"
+        itemArray.append(newItem3)
+        
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
             itemArray = items
         }
+        
     }
 
     
@@ -43,8 +64,20 @@ class TodoListViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         
+        let item = itemArray[indexPath.row]
+        
         //Populate textLabel text with text from itemArray at current index
-        cell.textLabel?.text = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        //Ternary operator
+        //value = condition ? valueIfTrue : valueIfFalse
+        cell.accessoryType = item.done ? .checkmark : .none
+    
+//        if item.done == true {
+//            cell.accessoryType = .checkmark
+//        } else {
+//            cell.accessoryType = .none
+//        }
         
         return cell
         
@@ -55,14 +88,18 @@ class TodoListViewController: UITableViewController {
     //MARK - Tableview Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //print(itemArray[indexPath.row])
+      
+        //Toggle boolean condition of item, equivalent to longer if/else statement
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        tableView.reloadData()
         
         //Remove checkmark if there is already one there, otherwise put one in
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        } else {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
         
         //Deselect highlighting of row after tap action
         tableView.deselectRow(at: indexPath, animated: true)
@@ -84,8 +121,14 @@ class TodoListViewController: UITableViewController {
         //Create a alert action
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             
-            //When user clicks, append text in textfield to array
-            self.itemArray.append(textField.text!)
+            //Declare instance of Item object
+            let newItem = Item()
+            
+            //Set newItem to hold textFiel.text
+            newItem.title = textField.text!
+            
+            //When user clicks, append object newItem
+            self.itemArray.append(newItem)
             
             //Set the key and value for UserDefaults
             self.defaults.set(self.itemArray, forKey: "TodoListArray")
