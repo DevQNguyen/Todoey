@@ -8,9 +8,10 @@
 
 import Foundation
 
-class Item {
+//Declare class with protocol conforming to Codable
+class Item: Codable {
     
-    //Declare data model constants
+    //Declare data model variables
     var title: String = ""
     var done: Bool = false
     
