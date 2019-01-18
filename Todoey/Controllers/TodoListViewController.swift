@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CoreData
+
 
 class TodoListViewController: UITableViewController {
     
@@ -14,8 +16,10 @@ class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
     
     //Declare reference for a dataFilePath to store data objects
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
+    //Declare a constant to refer to persistentContainer.viewContext object in AppDelegate.swift
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
     //Declare user default to persist key-value data across launches
@@ -26,10 +30,10 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib
         
-        print(dataFilePath)
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
         
         
-        //Load data from PList as defined in dataFilePath
+        //Load data from SQLite database
         loadItems()
         
         //Declare an instance of Item object
@@ -101,6 +105,13 @@ class TodoListViewController: UITableViewController {
     //When row is tapped, execute specified code
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
       
+        //-----Using Delete Method------
+        //1. Delete specified row in context (staging area) of database
+        //context.delete(itemArray[indexPath.row])
+        //2. Delete item in itemArray at specified row
+        //itemArray.remove(at: indexPath.row)
+        
+        
         //Toggle boolean condition of item, equivalent to longer if/else statement
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
@@ -138,11 +149,15 @@ class TodoListViewController: UITableViewController {
         //Declare an action reference to the alert popup
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             
-            //Declare instance of Item object
-            let newItem = Item()
+            
+            
+            //Declare instance of Item object that points to persistentContainer.viewContext
+            let newItem = Item(context: self.context)
             
             //Set newItem to reference user input from textFiel.text
             newItem.title = textField.text!
+            //Set newItem.done to false for every newly added item
+            newItem.done = false
             
             //When user clicks, append object newItem
             self.itemArray.append(newItem)
@@ -173,29 +188,55 @@ class TodoListViewController: UITableViewController {
     //Encode user inputed items to PList at dataFilePath
     func saveItems() {
         
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("Error encoding item array, \(error)")
+            print("Error saving context, \(error)")
         }
         
     }
     
     
-    //Decode Plist located at dataFilePath to itemArray
-    func loadItems() {
-        
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                try itemArray = decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding item array, \(error)")
-            }
+    //Load items from SQLite database
+    //Note: paramater has outside arg 'with' and inside arg 'request'
+    //Note: parameter has default value set to Item.fetchRequest if none given
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+
+        //Create reference to Item table in database using request method
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+            //Store values from context to itemArray
+            itemArray = try context.fetch(request)
+        } catch {
+            print("Error fetching context, \(error)")
         }
+        
+        tableView.reloadData()
+    }
+    
+    
+}
+
+
+///////////////////////////////////////////
+
+//MARK: - Search Bar Methods
+
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        //Declare a constant reference to a fetch request object from a persistent storage
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        //Use NSPredicate to filter search term. 'cd', after CONTAINS excludes case and diacritics
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        //Create a sort descriptor
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        //Call method that loads request items into itemArray
+        loadItems(with: request)
         
     }
     
