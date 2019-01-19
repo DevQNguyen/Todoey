@@ -203,7 +203,8 @@ class TodoListViewController: UITableViewController {
     func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
 
         //Create reference to Item table in database using request method
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        //let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
         do {
             //Store values from context to itemArray
             itemArray = try context.fetch(request)
@@ -238,6 +239,21 @@ extension TodoListViewController: UISearchBarDelegate {
         //Call method that loads request items into itemArray
         loadItems(with: request)
         
+    }
+    
+    //Method to take user back to tableView when searchbar text has changed
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        //If there is no text in search bar
+        if searchBar.text?.count == 0 {
+            //1. load fetched items into itemArray
+            loadItems()
+            //2. Prioritize execution of code inside curly bracket
+            DispatchQueue.main.async {
+                //3. turn off searchbar as first responder
+                searchBar.resignFirstResponder()
+            }
+        }
     }
     
 }
