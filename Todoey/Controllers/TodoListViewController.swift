@@ -30,35 +30,12 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
         
         
         //Load data from SQLite database
         loadItems()
-        
-        //Declare an instance of Item object
-//        let newItem = Item()
-//        //Store string in newItem
-//        newItem.title = "Eat ice cream"
-//        //Append newItem to itemArray
-//        itemArray.append(newItem)
-//
-//
-//        //Append newItem2
-//        let newItem2 = Item()
-//        newItem2.title = "Buy Ferrari 458"
-//        itemArray.append(newItem2)
-//
-//        //Append newItem3
-//        let newItem3 = Item()
-//        newItem3.title = "Buy 747 Jumbo Jet"
-//        itemArray.append(newItem3)
-        
-        
-//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-//            itemArray = items
-//        }
-        
+                
     }
 
     
@@ -165,7 +142,7 @@ class TodoListViewController: UITableViewController {
             //Set the key and value for UserDefaults
             //self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
-            //Encode to PList
+            //Encode to persistent container
             self.saveItems()
             
             
@@ -175,7 +152,7 @@ class TodoListViewController: UITableViewController {
         }
         //Add textfield to alert popup
         alert.addTextField { (alertTextField) in
-            alertTextField.placeholder = "Create new item"
+            alertTextField.placeholder = "Create New Item"
             textField = alertTextField
         }
         //Add an action to alert popup
