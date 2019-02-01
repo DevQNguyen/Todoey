@@ -15,6 +15,13 @@ class TodoListViewController: UITableViewController {
     //Declare variable for array of Item objects as defined in Items.swift
     var itemArray = [Item]()
     
+    var selectedCategory: Category? {
+        //Once Category gets a value, load items into array
+        didSet{
+            loadItems()
+        }
+    }
+    
     //Declare reference for a dataFilePath to store data objects
     //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
@@ -135,6 +142,8 @@ class TodoListViewController: UITableViewController {
             newItem.title = textField.text!
             //Set newItem.done to false for every newly added item
             newItem.done = false
+            //Set parentCategory
+            newItem.parentCategory = self.selectedCategory
             
             //When user clicks, append object newItem
             self.itemArray.append(newItem)
@@ -177,10 +186,20 @@ class TodoListViewController: UITableViewController {
     //Load items from SQLite database
     //Note: paramater has outside arg 'with' and inside arg 'request'
     //Note: parameter has default value set to Item.fetchRequest if none given
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    //Note: add extra parameter for predicate using default 'nil'
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
 
         //Create reference to Item table in database using request method
         //let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        //Check if passed-in predicate is !nil, use Optional Binding to ensure safety
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
         
         do {
             //Store values from context to itemArray
@@ -208,13 +227,13 @@ extension TodoListViewController: UISearchBarDelegate {
         let request: NSFetchRequest<Item> = Item.fetchRequest()
         
         //Use NSPredicate to filter search term. 'cd', after CONTAINS excludes case and diacritics
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         //Create a sort descriptor
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         //Call method that loads request items into itemArray
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
         
     }
     
