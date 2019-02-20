@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,9 +17,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        // 5Realm. printout file path for realm data
+        print(Realm.Configuration.defaultConfiguration.fileURL)
         
         
+        // 3Realm. Create object of Data class
+        let data = Data()
+        data.name = "Quang"
+        data.age = 30
+        
+        // 1Realm. Initialize a realm instance
+        do {
+            let realm = try Realm()
+            // 4Realm. CRUD ops, Create data in realm instance
+            try realm.write {
+                realm.add(data)
+            }
+        } catch {
+            print("Error initializing new realm, \(error)")
+        }
+
         return true
     }
 
