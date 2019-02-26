@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Category.swift
 //  Todoey
 //
 //  Created by Quang  Nguyen on 2/19/19.
@@ -9,11 +9,9 @@
 import Foundation
 import RealmSwift
 
-
-// 2Realm. Declare a class with superclass of Object with properties
-class Data: Object {
+class Category: Object {
     
     @objc dynamic var name: String = ""
-    @objc dynamic var age: Int = 0
-    
+    // Initialize a List (realm term for a type of container) of Item objects
+    let items = List<Item>()
 }

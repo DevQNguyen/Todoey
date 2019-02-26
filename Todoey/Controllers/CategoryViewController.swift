@@ -7,15 +7,16 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
 
-    //Variable referencing an array of Category objects
-    var categoryArray = [Category]()
+    // Initialize an instance of realm with forced uwrap
+    let realm = try! Realm()
     
-    //Constant to reference persistent container object in AppDelegate.swift
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    // Reference to Result type container with Category (optional) objects
+    var categories: Results<Category>?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,7 +33,8 @@ class CategoryViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return categoryArray.count
+        // Use 'Nil Coalesing Operator', if categories not nil use count, else use 1
+        return categories?.count ?? 1
         
     }
     
@@ -43,8 +45,8 @@ class CategoryViewController: UITableViewController {
         //Resue a cell that's out of the screen view
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        //Populate cell textLabel with name from categoryArray
-        cell.textLabel?.text = categoryArray[indexPath.row].name
+        //Populate cell textLabel with name from categeries? if not nil, if nil use provided text
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added Yet"
         
         return cell
         
@@ -54,18 +56,20 @@ class CategoryViewController: UITableViewController {
 ///////////////////////////////////////////
     
     //MARK - TableView Delegate Methods
+    // Perform segue when a row is tapped/selected
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         performSegue(withIdentifier: "goToItems", sender: self)
         
     }
     
+    // Passing selected category over to TodoListViewController
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         let destinationVC = segue.destination as! TodoListViewController
         
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categoryArray[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
  
         }
     }
@@ -87,18 +91,14 @@ class CategoryViewController: UITableViewController {
         //Declare an action reference to the alert popup
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             
-            //Declare instance of Category object point to persistentContainer.viewContext
-            let newCategory = Category(context: self.context)
+            // Initialize instance of Category object from Category class
+            let newCategory = Category()
             
             //Assign newCategory to user input from textField
             newCategory.name = textField.text!
             
-            //When user click action popup append input to array
-            self.categoryArray.append(newCategory)
-            
-            
             //Encode to persistent container
-            self.saveCategories()
+            self.save(category: newCategory)
             
             //Reload data for new entry to show in cell
             self.tableView.reloadData()
@@ -122,24 +122,24 @@ class CategoryViewController: UITableViewController {
     
     //MARK: - Data Manipulation Methods
     
-    //Save Context
-    func saveCategories() {
+    // Add/CREATE data to Realm database
+    func save(category: Category) {
         do  {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
-            print("Error saving context, \(error)")
+            print("Error saving category, \(error)")
         }
     }
     
     
-    //Load categories into SQlite database
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()) {
-        do {
-            categoryArray = try context.fetch(request)
-        } catch {
-            print("Error fetching context, \(error)")
-        }
-                
+    //Load/READ categories into SQlite database
+    func loadCategories() {
+        
+        // Pullout all items inside realm constainer of Category object
+        categories = realm.objects(Category.self)
+        
         tableView.reloadData()
         
     }
