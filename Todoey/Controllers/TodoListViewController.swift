@@ -86,18 +86,18 @@ class TodoListViewController: UITableViewController {
     
     //When row is tapped, execute specified code
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-      
-        //-----Using Delete Method------
-        //1. Delete specified row in context (staging area) of database
-        //context.delete(itemArray[indexPath.row])
-        //2. Delete item in itemArray at specified row
-        //itemArray.remove(at: indexPath.row)
         
-        
-        //Toggle boolean condition of item, equivalent to longer if/else statement
-        //todoItems[indexPath.row].done = !todoItems[indexPath.row].done
-        
-        //saveItems()
+        // Updating done status of item
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    // Toggle boolean value
+                    item.done = !item.done
+                }
+            } catch {
+                print("Error updating item done status, \(error)")
+            }
+        }
         
         //Reload content in tableView to include the above change
         tableView.reloadData()
