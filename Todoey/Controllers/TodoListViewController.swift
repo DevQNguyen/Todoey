@@ -92,7 +92,10 @@ class TodoListViewController: UITableViewController {
             do {
                 try realm.write {
                     // Toggle boolean value
-                    item.done = !item.done
+                    //item.done = !item.done
+                    
+                    // ** Instead of toggling, we can use Realm to delete the selected row **
+                    realm.delete(item)
                 }
             } catch {
                 print("Error updating item done status, \(error)")
