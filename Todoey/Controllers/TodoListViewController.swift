@@ -20,7 +20,7 @@ class TodoListViewController: UITableViewController {
     
     // Passed in from CategoryViewController in prepare(for segue)
     var selectedCategory: Category? {
-        //Once Category gets a value, load items into array
+        //Once Category gets a value, load items into todoItems' collection of Item objects
         didSet{
             loadItems()
         }
@@ -137,6 +137,8 @@ class TodoListViewController: UITableViewController {
                         let newItem = Item()
                         // Set .name for newItem from textField input
                         newItem.name = textField.text!
+                        // Get timestamp for newItem
+                        newItem.dateCreated = Date()
                         // Append newItem to currentCategory items list
                         currentCategory.items.append(newItem)
                         
@@ -179,7 +181,7 @@ class TodoListViewController: UITableViewController {
     func loadItems() {
         
         // Get all items from selectedCategory and sort accordingly
-        todoItems = selectedCategory?.items.sorted(byKeyPath: "name", ascending: true)
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
         
         tableView.reloadData()
     }
@@ -192,38 +194,29 @@ class TodoListViewController: UITableViewController {
 
 //MARK: - Search Bar Methods
 
-//extension TodoListViewController: UISearchBarDelegate {
-//
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//
-//        //Declare a constant reference to a fetch request object from a persistent storage
-//        let request: NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        //Use NSPredicate to filter search term. 'cd', after CONTAINS excludes case and diacritics
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//
-//        //Create a sort descriptor
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        //Call method that loads request items into itemArray
-//        loadItems(with: request, predicate: predicate)
-//
-//    }
-//
-//    //Method to take user back to tableView when searchbar text has changed
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//
-//        //If there is no text in search bar
-//        if searchBar.text?.count == 0 {
-//            //1. load fetched items into itemArray
-//            loadItems()
-//            //2. Prioritize execution of code inside curly bracket
-//            DispatchQueue.main.async {
-//                //3. turn off searchbar as first responder
-//                searchBar.resignFirstResponder()
-//            }
-//        }
-//    }
-//
-//}
-//
+extension TodoListViewController: UISearchBarDelegate {
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+
+        todoItems = todoItems?.filter("name CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+        
+        tableView.reloadData()
+    }
+
+    //Method to take user back to tableView when searchbar text has changed
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        //If there is no text in search bar
+        if searchBar.text?.count == 0 {
+            //1. load fetched items into itemArray
+            loadItems()
+            //2. Prioritize execution of code inside curly bracket
+            DispatchQueue.main.async {
+                //3. turn off searchbar as first responder
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+
+}
+

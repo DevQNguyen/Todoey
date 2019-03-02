@@ -14,4 +14,5 @@ class Category: Object {
     @objc dynamic var name: String = ""
     // Initialize a List (realm term for a type of container) of Item objects
     let items = List<Item>()
+    
 }
