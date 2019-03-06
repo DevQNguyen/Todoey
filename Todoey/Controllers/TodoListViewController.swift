@@ -10,7 +10,7 @@ import UIKit
 import RealmSwift
 
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
     // Declare variable to reference Results container of Item objects
     var todoItems: Results<Item>?
@@ -37,7 +37,6 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib
         
 //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
         
@@ -60,7 +59,8 @@ class TodoListViewController: UITableViewController {
     //TODO: Populate cell at specified row of indexpath
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        // Grab dequeued cell from superclass tableview
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = todoItems?[indexPath.row] {
             
@@ -176,7 +176,7 @@ class TodoListViewController: UITableViewController {
 //    }
     
     
-    // Load items from realm database
+    //MARK - Load items from realm database
     func loadItems() {
         
         // Get all items from selectedCategory and sort accordingly
@@ -185,6 +185,19 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    //MARK - Delete selected item
+    override func updateModel(at indexPath: IndexPath){
+        //Update data model
+        if let itemForDeletion = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error deleting item, \(error)")
+            }
+        }
+    }
     
 }
 

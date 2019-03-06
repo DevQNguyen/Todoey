@@ -23,8 +23,6 @@ class CategoryViewController: SwipeTableViewController {
         
         loadCategories()
         
-        // Set tableView row height to accomodate icons
-        tableView.rowHeight = 80.0
     }
 
 ///////////////////////////////////////////
@@ -147,10 +145,10 @@ class CategoryViewController: SwipeTableViewController {
     
     //MARK - Delete selected category
     override func updateModel(at indexPath: IndexPath) {
-        if let categoryForDeletion = self.categories?[indexPath.row] {
+        if let categoryForDeletion = categories?[indexPath.row] {
             do {
-                try self.realm.write {
-                    self.realm.delete(categoryForDeletion)
+                try realm.write {
+                    realm.delete(categoryForDeletion)
                 }
             } catch {
                 print("Error deleting category, \(error)")
