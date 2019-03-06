@@ -64,7 +64,7 @@ class TodoListViewController: UITableViewController {
         
         if let item = todoItems?[indexPath.row] {
             
-            //Populate textLabel text with text from itemArray at current index
+            //Populate textLabel text with text from todoItems array at current row
             cell.textLabel?.text = item.name
             
             //Ternary operator to determine whether to populate with checkmark or not
@@ -128,7 +128,6 @@ class TodoListViewController: UITableViewController {
             
             // If selectedCategory is not nil, add newItem
             if let currentCategory = self.selectedCategory {
-                
                 // Write to realm container
                 do {
                     try self.realm.write {
@@ -205,10 +204,9 @@ extension TodoListViewController: UISearchBarDelegate {
 
     //Method to take user back to tableView when searchbar text has changed
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-
         //If there is no text in search bar
         if searchBar.text?.count == 0 {
-            //1. load fetched items into itemArray
+            //1. load items
             loadItems()
             //2. Prioritize execution of code inside curly bracket
             DispatchQueue.main.async {

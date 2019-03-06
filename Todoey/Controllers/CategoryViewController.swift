@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     // Initialize an instance of realm with forced uwrap
     let realm = try! Realm()
@@ -23,6 +23,8 @@ class CategoryViewController: UITableViewController {
         
         loadCategories()
         
+        // Set tableView row height to accomodate icons
+        tableView.rowHeight = 80.0
     }
 
 ///////////////////////////////////////////
@@ -38,14 +40,15 @@ class CategoryViewController: UITableViewController {
         
     }
     
-    //TODO: Populate cell in specified row in indexpath
+    
+    //TODO: Populate cell in specified row at indexpath
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        //Resue a cell that's out of the screen view
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        // Tap into superclass(SwipeTableViewController) to load cell properties at current indexPath
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        //Populate cell textLabel with name from categeries? if not nil, if nil use provided text
+        //Populate cell textLabel with name from current categeries? if not nil, if nil use provided text
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added Yet"
         
         return cell
@@ -73,8 +76,6 @@ class CategoryViewController: UITableViewController {
  
         }
     }
-    
-    
     
 //////////////////////////////////////////
     
@@ -134,7 +135,7 @@ class CategoryViewController: UITableViewController {
     }
     
     
-    //Load/READ categories into SQlite database
+    //MARK - Load/READ categories into Realm database
     func loadCategories() {
         
         // Pullout all items inside realm constainer of Category object
@@ -143,11 +144,19 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
         
     }
-        
     
-    
-    
-   
-    
-    
+    //MARK - Delete selected category
+    override func updateModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("Error deleting category, \(error)")
+            }
+        }
+    }
+
 }
+
