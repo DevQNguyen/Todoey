@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
 
@@ -22,6 +23,9 @@ class CategoryViewController: SwipeTableViewController {
         super.viewDidLoad()
         
         loadCategories()
+        
+        // Remove tableview row separators
+        tableView.separatorStyle = .none
         
     }
 
@@ -46,8 +50,14 @@ class CategoryViewController: SwipeTableViewController {
         // Tap into superclass(SwipeTableViewController) to load cell properties at current indexPath
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
+        // Get hex string of random color
+        let randomColorHex = categories?[indexPath.row].color
+        
         //Populate cell textLabel with name from current categeries? if not nil, if nil use provided text
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added Yet"
+        
+        // Set random color for tableview row
+        cell.backgroundColor = UIColor(hexString: randomColorHex ?? UIColor.randomFlat.hexValue())
         
         return cell
         
@@ -96,6 +106,9 @@ class CategoryViewController: SwipeTableViewController {
             //Assign newCategory to user input from textField
             newCategory.name = textField.text!
             
+            //Assign random color to newCategory
+            newCategory.color = UIColor.randomFlat.hexValue()
+            
             //Encode to persistent container
             self.save(category: newCategory)
             
@@ -121,7 +134,7 @@ class CategoryViewController: SwipeTableViewController {
     
     //MARK: - Data Manipulation Methods
     
-    // Add/CREATE data to Realm database
+    // Add/CREATE new category to Realm database
     func save(category: Category) {
         do  {
             try realm.write {
@@ -133,7 +146,7 @@ class CategoryViewController: SwipeTableViewController {
     }
     
     
-    //MARK - Load/READ categories into Realm database
+    //MARK - Load/READ categories from Realm database to global variable
     func loadCategories() {
         
         // Pullout all items inside realm constainer of Category object
