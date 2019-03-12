@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 
 class TodoListViewController: SwipeTableViewController {
@@ -38,6 +39,10 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        
+        tableView.separatorStyle = .none
+        
 //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
         
     }
@@ -66,6 +71,22 @@ class TodoListViewController: SwipeTableViewController {
             
             //Populate textLabel text with text from todoItems array at current row
             cell.textLabel?.text = item.name
+            
+            // selectedCategory can be forced unwrap because todoItem is not nil
+            let persistedRowColor = UIColor(hexString: selectedCategory!.color)
+            // Optional binding
+            if let color = persistedRowColor?.darken(byPercentage:
+                (CGFloat(indexPath.row) / CGFloat(todoItems!.count))) {
+                // Set background color for row
+                cell.backgroundColor = color
+                // Use ChameleonFramework to automatically set text color contrast
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
+            
+            // **Whole number divided by whole number get rounded off
+            //print("Version 1: \(CGFloat(indexPath.row / todoItems!.count))")
+            // **Float divided by float is not rounded
+            //print("Version 2: \(CGFloat(indexPath.row) / CGFloat(todoItems!.count))")
             
             //Ternary operator to determine whether to populate with checkmark or not
             //value = condition ? valueIfTrue : valueIfFalse
