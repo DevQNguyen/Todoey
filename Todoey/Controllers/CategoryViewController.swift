@@ -50,17 +50,22 @@ class CategoryViewController: SwipeTableViewController {
         // Tap into superclass(SwipeTableViewController) to load cell properties at current indexPath
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        // Get hex string of random color
-        let randomColorHex = categories?[indexPath.row].color
+        // Grab category object at specified row if it exists
+        guard let category = categories?[indexPath.row] else {fatalError("Category Does Not Exist!")}
+        
+        // Get UIColor from Category object
+        guard let categoryColor = UIColor(hexString: category.color) else {fatalError("Color Does Not Exist!")}
         
         //Populate cell textLabel with name from current categeries? if not nil, if nil use provided text
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added Yet"
+        cell.textLabel?.text = category.name
         
-        // Set random color for tableview row
-        cell.backgroundColor = UIColor(hexString: randomColorHex ?? UIColor.randomFlat.hexValue())
+        // Set Category text to be contrasting color with background
+        cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
         
+        // Set random color for tableview row color
+        cell.backgroundColor = categoryColor
+    
         return cell
-        
     }
 
 

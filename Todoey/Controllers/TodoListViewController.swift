@@ -19,6 +19,10 @@ class TodoListViewController: SwipeTableViewController {
     // Declare new instance of realm
     let realm = try! Realm()
     
+    // IBOutlet view
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    
     // Passed in from CategoryViewController in prepare(for segue)
     var selectedCategory: Category? {
         //Once Category gets a value, load items into todoItems' collection of Item objects
@@ -30,8 +34,6 @@ class TodoListViewController: SwipeTableViewController {
     //Declare reference for a dataFilePath to store data objects
     //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
-    
-    
     //Declare user default to persist key-value data across launches
     //let defaults = UserDefaults.standard
     
@@ -39,7 +41,7 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         tableView.separatorStyle = .none
         
@@ -47,6 +49,46 @@ class TodoListViewController: SwipeTableViewController {
         
     }
 
+    // Right before view loads, set navBar color to be same as selectedCategory
+    override func viewWillAppear(_ animated: Bool) {
+        
+        // set navBar title
+        title = selectedCategory!.name
+        
+        guard let colorHex = selectedCategory?.color else {fatalError("Selected Category Hex Color Not Found")}
+        
+        updateNavBar(withHexCode: colorHex)
+
+    }
+    
+    // Reset navBar color back to original when 'back' button is clicked
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        updateNavBar(withHexCode: "1D9BF6")
+
+    }
+    
+    
+    //MARK: - Update navBar Color
+    func updateNavBar(withHexCode colorHexCode: String){
+        
+        //Grab navBar and assign to variable
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation Controller Does Not Exist.")}
+        
+        // Set UIColor using passed in argument with string of hex color
+        guard let navBarColor = UIColor(hexString: colorHexCode) else {fatalError("UI Color Not Available")}
+        
+        // Apply color to navBar background
+        navBar.barTintColor = navBarColor
+        // Apply contrasting color to navBar button & items
+        navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+        // Apply constrast color to large text
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        // Apply searcBar background color
+        searchBar.barTintColor = navBarColor
+        
+    }
+    
     
  /////////////////////////////////////////////
     
@@ -81,12 +123,9 @@ class TodoListViewController: SwipeTableViewController {
                 cell.backgroundColor = color
                 // Use ChameleonFramework to automatically set text color contrast
                 cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+                // Set checkmark color to contrast with background
+                cell.tintColor = ContrastColorOf(color, returnFlat: true)
             }
-            
-            // **Whole number divided by whole number get rounded off
-            //print("Version 1: \(CGFloat(indexPath.row / todoItems!.count))")
-            // **Float divided by float is not rounded
-            //print("Version 2: \(CGFloat(indexPath.row) / CGFloat(todoItems!.count))")
             
             //Ternary operator to determine whether to populate with checkmark or not
             //value = condition ? valueIfTrue : valueIfFalse
@@ -184,18 +223,7 @@ class TodoListViewController: SwipeTableViewController {
         present(alert, animated: true, completion: nil)
         
     }
-    
-    //Encode user inputed items to PList at dataFilePath
-//    func saveItems() {
-//
-//        do {
-//            try context.save()
-//        } catch {
-//            print("Error saving context, \(error)")
-//        }
-//
-//    }
-    
+        
     
     //MARK - Load items from realm database
     func loadItems() {
